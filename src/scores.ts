@@ -1,10 +1,11 @@
 export class Course {
+    full: string;
     department: string;
     code: string;
 
     constructor(public str: string) {
-        const courseRegExp = new RegExp('([A-Z]{4}) ([0-9]{4}[A-Z]?)');
-        [this.department, this.code] = str.match(courseRegExp);
+        const courseRegExp = new RegExp('([A-Z]{3}[A-Z]?) ([0-9]{4}[A-Z]?)');
+        [this.full, this.department, this.code] = str.match(courseRegExp);
     }
 }
 

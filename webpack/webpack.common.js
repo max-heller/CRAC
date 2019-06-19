@@ -1,12 +1,13 @@
 const path = require("path");
+const srcDir = '../src/';
 
 module.exports = {
     entry: {
-        inject: path.join(__dirname, "src/inject.ts"),
-        background: path.join(__dirname, "src/background.ts")
+        inject: path.join(__dirname, srcDir + "inject.ts"),
+        background: path.join(__dirname, srcDir + "background.ts")
     },
     output: {
-        path: path.join(__dirname, "dist/js"),
+        path: path.join(__dirname, "../dist/js"),
         filename: "[name].js"
     },
     module: {
@@ -19,6 +20,6 @@ module.exports = {
         ]
     },
     resolve: {
-        extensions: [".ts", ".tsx", ".js"]
+        extensions: ['.ts', '.tsx', '.js']
     }
 };
