@@ -9,8 +9,8 @@ export class Course {
     }
 }
 
-class Score {
-    constructor(public score: Number) {
+export class Score {
+    constructor(public score: number) {
     }
 
     toString(): string {
@@ -18,17 +18,23 @@ class Score {
     }
 }
 
-class Scores {
-    profScore: Score;
-    courseScore: Score;
+export class Scores {
+    profScore?: Score;
+    courseScore?: Score;
 
-    constructor(professor: Number, course: Number) {
-        this.profScore = new Score(professor);
-        this.courseScore = new Score(course);
+    constructor(acc: meanAccumulator) {
+        if (acc.profCount) this.profScore = new Score(acc.profSum / acc.profCount);
+        if (acc.courseCount) this.courseScore = new Score(acc.courseSum / acc.courseCount);
     }
 }
 
-export function getScores(course: Course): Scores {
-    console.log(`Finding scores for ${course.department} ${course.code}`);
-    return new Scores((Math.random() * 2 + 3), (Math.random() * 2 + 3))
+export class meanAccumulator {
+    profSum: number;
+    profCount: number;
+    courseSum: number;
+    courseCount: number;
+
+    constructor() {
+        this.profSum = this.profCount = this.courseSum = this.courseCount = 0;
+    }
 }
