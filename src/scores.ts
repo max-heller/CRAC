@@ -1,11 +1,12 @@
 export class Course {
-    full: string;
+    name: string;
     department: string;
     code: string;
 
     constructor(str: string) {
-        const courseRegExp = new RegExp('([A-Z]{3}[A-Z]?) ([0-9]{4}[A-Z]?)');
-        [this.full, this.department, this.code] = str.match(courseRegExp);
+        // Slice to remove 'code:' prefix
+        this.name = str.slice(5);
+        [this.department, this.code] = this.name.split(' ');
     }
 }
 

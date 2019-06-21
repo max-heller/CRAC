@@ -20,7 +20,7 @@ export function api(selectors: ReviewSelector[]): Promise<Review[]> {
         .then(response => response.json());
 }
 
-export async function getScores(courses: Course[]): Promise<Map<string, Scores>> {
+export async function getScores(courses: Course[]): Promise<{ [s: string]: Scores }> {
     console.log("Finding scores for:", courses);
     const selectors = courses.map(course => {
         return {
@@ -32,11 +32,11 @@ export async function getScores(courses: Course[]): Promise<Map<string, Scores>>
     const reviews = await api(selectors);
     console.log(`Reviews:`, reviews);
 
-    const allScores = new Map();
-    courses.forEach(course => allScores.set(course.full, new Scores()));
+    const allScores = {};
+    courses.forEach(course => allScores[course.name] = new Scores());
     reviews.map(convertIfNecessary).forEach(review => {
         const name = review.department_code + ' ' + review.course_num;
-        const scores = allScores.get(name);
+        const scores = allScores[name];
         if (review.profavg) {
             scores.profSum += review.profavg;
             scores.profCount++;
@@ -49,7 +49,7 @@ export async function getScores(courses: Course[]): Promise<Map<string, Scores>>
     return allScores;
 }
 
-function convertIfNecessary(review: Review): Review {
+export function convertIfNecessary(review: Review): Review {
     function shouldConvert(edition: string): boolean {
         var arr = edition.split('.').map(Number.parseInt);
         return (arr[0] < 2014 || (arr[0] === 2014 && arr[2] !== 2));

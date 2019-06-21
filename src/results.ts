@@ -9,7 +9,7 @@ export default async function updateResults(results: Element[]) {
   const allScores = await getScores(courses);
   courses.forEach((course, i) => {
     const headline: Element = results[i].querySelector('.result__headline');
-    const scores = allScores.get(course.full);
+    const scores = allScores[course.name];
     headline.innerHTML +=
       `<div style="margin: auto; padding: 2px">
          <div>${scores.getProfScore()}</div>
