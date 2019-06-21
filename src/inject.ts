@@ -1,4 +1,4 @@
-import updateResult from "./results";
+import updateResults from "./results";
 
 console.log("Injected script!");
 
@@ -18,8 +18,8 @@ new MutationObserver(function (mutations) {
 
 const resultsObserver = new MutationObserver(function (mutations) {
     console.log("resultsObserver triggered");
-    let target = mutations.pop().target as Element;
-    let results = target.getElementsByClassName("result result--group-start");
+    const target = mutations.pop().target as Element;
+    const results = target.getElementsByClassName("result result--group-start");
     console.log(`Found ${results.length} results!`);
-    for (const result of results) updateResult(result);
+    updateResults(Array.from(results));
 });

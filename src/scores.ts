@@ -3,32 +3,13 @@ export class Course {
     department: string;
     code: string;
 
-    constructor(public str: string) {
+    constructor(str: string) {
         const courseRegExp = new RegExp('([A-Z]{3}[A-Z]?) ([0-9]{4}[A-Z]?)');
         [this.full, this.department, this.code] = str.match(courseRegExp);
     }
 }
 
-export class Score {
-    constructor(public score: number) {
-    }
-
-    toString(): string {
-        return this.score.toPrecision(3);
-    }
-}
-
 export class Scores {
-    profScore?: Score;
-    courseScore?: Score;
-
-    constructor(acc: meanAccumulator) {
-        if (acc.profCount) this.profScore = new Score(acc.profSum / acc.profCount);
-        if (acc.courseCount) this.courseScore = new Score(acc.courseSum / acc.courseCount);
-    }
-}
-
-export class meanAccumulator {
     profSum: number;
     profCount: number;
     courseSum: number;
@@ -36,5 +17,15 @@ export class meanAccumulator {
 
     constructor() {
         this.profSum = this.profCount = this.courseSum = this.courseCount = 0;
+    }
+
+    public getProfScore(): string {
+        return (this.profCount) ?
+            (this.profSum / this.profCount).toPrecision(3) : "N/A";
+    }
+
+    public getCourseScore(): string {
+        return (this.courseCount) ?
+            (this.courseSum / this.courseCount).toPrecision(3) : "N/A";
     }
 }

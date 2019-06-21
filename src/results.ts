@@ -1,16 +1,19 @@
-import { Course } from './scores';
 import { getScores } from './api';
+import { Course } from './scores';
 
-export default async function updateResult(result: Element) {
-  let courseName = result.firstElementChild.getAttribute('data-group');
-  let scores = await getScores(new Course(courseName));
-  let profScore = scores.profScore ? scores.profScore.toString() : "N/A";
-  let courseScore = scores.courseScore ? scores.courseScore.toString() : "N/A";
+export default async function updateResults(results: Element[]) {
+  const courses = results.map(result => {
+    return new Course(result.firstElementChild.getAttribute('data-group'));
+  });
 
-  let headline: Element = result.querySelector('.result__headline');
-  headline.innerHTML +=
-    `<div style="margin: auto; padding: 2px">
-       <div>${profScore}</div>
-       <div>${courseScore}</div>
-     </div>`;
+  const allScores = await getScores(courses);
+  courses.forEach((course, i) => {
+    const headline: Element = results[i].querySelector('.result__headline');
+    const scores = allScores.get(course.full);
+    headline.innerHTML +=
+      `<div style="margin: auto; padding: 2px">
+         <div>${scores.getProfScore()}</div>
+         <div>${scores.getCourseScore()}</div>
+       </div>`;
+  });
 }
