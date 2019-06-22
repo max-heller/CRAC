@@ -30,9 +30,10 @@ test("retrieving reviews for multiple courses", async () => {
     });
 });
 
-test("no scores produced for fake course", async () => {
-    const scores = await getScores([new Course("ABCD 1234")]);
-    expect(scores).toEqual({ "ABCD 1234": new Scores() });
+test("N/A scores produced for fake course", async () => {
+    const scores = (await getScores([new Course("ABCD 1234")]))["ABCD 1234"];
+    expect(scores.getCourseScore()).toBe("N/A");
+    expect(scores.getProfScore()).toBe("N/A");
 });
 
 function expectValidScores(scores: Scores) {
