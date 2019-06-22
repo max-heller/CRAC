@@ -1,12 +1,9 @@
 export class Course {
-    name: string;
     department: string;
     code: string;
 
-    constructor(str: string) {
-        // Slice to remove 'code:' prefix
-        this.name = str.slice(5);
-        [this.department, this.code] = this.name.split(' ');
+    constructor(public name: string) {
+        [this.department, this.code] = name.split(' ');
     }
 }
 

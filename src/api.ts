@@ -21,7 +21,7 @@ export function api(selectors: ReviewSelector[]): Promise<Review[]> {
 }
 
 export async function getScores(courses: Course[]): Promise<{ [s: string]: Scores }> {
-    console.log("Finding scores for:", courses);
+    console.log(`Finding scores for ${courses.length} courses`);
     const selectors = courses.map(course => {
         return {
             department_code: course.department,
@@ -30,21 +30,17 @@ export async function getScores(courses: Course[]): Promise<{ [s: string]: Score
     });
 
     const reviews = await api(selectors);
-    console.log(`Reviews:`, reviews);
+    console.log(`Found ${reviews.length} reviews`);
 
     const allScores = {};
     courses.forEach(course => allScores[course.name] = new Scores());
     reviews.map(convertIfNecessary).forEach(review => {
         const name = review.department_code + ' ' + review.course_num;
         const scores = allScores[name];
-        if (review.profavg) {
-            scores.profSum += review.profavg;
-            scores.profCount++;
-        }
-        if (review.courseavg) {
-            scores.courseSum += review.courseavg;
-            scores.courseCount++;
-        }
+        scores.profSum += review.profavg;
+        scores.profCount++;
+        scores.courseSum += review.courseavg;
+        scores.courseCount++;
     });
     return allScores;
 }
@@ -56,7 +52,7 @@ export function convertIfNecessary(review: Review): Review {
     }
 
     function convert(score: number): number {
-        return score ? (-4 / 3) * score + (19 / 3) : 0;
+        return (-4 / 3) * score + (19 / 3);
     }
 
     if (shouldConvert(review.edition)) {

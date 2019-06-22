@@ -3,7 +3,7 @@ import { Course } from './scores';
 
 export default async function updateResults(results: Element[]) {
   const courses = results.map(result => {
-    return new Course(result.firstElementChild.getAttribute('data-group'));
+    return new Course(result.firstElementChild.getAttribute('data-group').slice(5));
   });
 
   const allScores = await getScores(courses);
