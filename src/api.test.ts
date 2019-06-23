@@ -2,6 +2,10 @@ import { FetchMock } from 'jest-fetch-mock';
 import { calculateScores, convertIfNecessary, getAllReviews, getAllScores } from './api';
 import { Scores } from './scores';
 
+beforeEach(() => {
+    localStorage.clear();
+});
+
 const review = {
     department_code: "CSCI",
     course_num: "0190",
@@ -38,6 +42,20 @@ test("valid scores retrieved for single review", async () => {
             prof: review.profavg
         }
     });
+});
+
+test("scores cached", async () => {
+    fetchMock.once(JSON.stringify([review]));
+    const scores1 = await getAllScores();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem).toHaveBeenCalledTimes(1);
+    expect(localStorage.setItem).toHaveBeenCalledTimes(1);
+
+    const scores2 = await getAllScores();
+    expect(scores2).toEqual(scores1);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem).toHaveBeenCalledTimes(2);
+    expect(localStorage.setItem).toHaveBeenCalledTimes(1);
 });
 
 test("reviews with one invalid score", async () => {

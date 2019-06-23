@@ -16,8 +16,14 @@ export function getAllReviews(): Promise<Review[]> {
     return fetch(apiURL).then(response => response.json());
 }
 
-export function getAllScores(): Promise<CourseMap<Scores>> {
-    return getAllReviews().then(calculateScores);
+export async function getAllScores(): Promise<CourseMap<Scores>> {
+    const cached = localStorage.getItem('scores');
+    if (cached) return JSON.parse(cached);
+    else {
+        const scores = await getAllReviews().then(calculateScores);
+        localStorage.setItem('scores', JSON.stringify(scores));
+        return scores;
+    }
 }
 
 export function calculateScores(reviews: Review[]): CourseMap<Scores> {
