@@ -18,9 +18,9 @@ export default async function updateResults(results: Element[]) {
         const headline: Element = results[i].querySelector('.result__headline');
         const scores = allScores[course] || new Scores();
         headline.innerHTML +=
-            `<div style="margin: auto; padding: 2px">
-                 <div>${scoreToString(scores.prof)}</div>
-                 <div>${scoreToString(scores.course)}</div>
+            `<div class="scores">
+                 <div class="score">${scoreToString(scores.prof)}</div>
+                 <div class="score">${scoreToString(scores.course)}</div>
              </div>`;
     });
 }
