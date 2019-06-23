@@ -1,59 +1,105 @@
-import { api, getScores, convertIfNecessary } from './api';
-import { Course, Scores } from './scores';
-import 'isomorphic-fetch';
+import { FetchMock } from 'jest-fetch-mock';
+import { calculateScores, convertIfNecessary, getAllReviews, getAllScores } from './api';
+import { Scores } from './scores';
 
-test("no reviews retrieved for fake course", async () => {
-    const reviews = await api([{ department_code: "ABCD", course_num: "1234" }]);
-    expect(reviews).toHaveLength(0);
+const review = {
+    department_code: "CSCI",
+    course_num: "0190",
+    edition: "2019.2020.1",
+    courseavg: 4.5,
+    profavg: 4.7
+};
+
+test("empty api response", async () => {
+    fetchMock.once("[]");
+    const scores = await getAllReviews();
+    expect(scores).toHaveLength(0);
 });
 
-test("retrieving reviews for single course", async () => {
-    const reviews = await api([{ department_code: "CSCI", course_num: "0190" }]);
-    expect(reviews.length).toBeGreaterThan(0);
-    reviews.forEach(review => {
-        expect(review.department_code).toBe("CSCI");
-        expect(review.course_num).toBe("0190");
+test("no reviews => no scores", async () => {
+    fetchMock.once("[]");
+    const scores = await getAllScores();
+    expect(scores).toEqual({});
+});
+
+test("scores pulled from api response", async () => {
+    fetchMock.once(JSON.stringify([review]));
+    const reviews = await getAllReviews();
+    expect(reviews).toHaveLength(1);
+    expect(reviews).toContainEqual(review);
+});
+
+test("valid scores retrieved for single review", async () => {
+    fetchMock.once(JSON.stringify([review]));
+    const scores = await getAllScores();
+    expect(scores).toEqual({
+        "CSCI 0190": {
+            course: review.courseavg,
+            prof: review.profavg
+        }
     });
 });
 
-test("retrieving reviews for multiple courses", async () => {
-    const reviews = await api([
-        { department_code: "PHYS", course_num: "0070" },
-        { department_code: "MATH", course_num: "0540" }
-    ]);
-    expect(reviews.length).toBeGreaterThan(0);
-    expect(reviews.some(review => review.department_code === "PHYS")).toBe(true);
-    expect(reviews.some(review => review.department_code === "MATH")).toBe(true);
-    reviews.forEach(review => {
-        expect(["PHYS", "MATH"].includes(review.department_code)).toBe(true);
-        expect(["0070", "0540"].includes(review.course_num)).toBe(true);
+test("reviews with one invalid score", async () => {
+    fetchMock.once(JSON.stringify([
+        { ...review, edition: "2011.2012.1", profavg: 1, courseavg: 0 },
+        { ...review, edition: "2011.2012.1", profavg: 0, courseavg: 4 },
+    ]));
+    expect(await getAllScores()).toEqual({
+        "CSCI 0190": new Scores(5, 1)
     });
 });
 
-test("N/A scores produced for fake course", async () => {
-    const scores = (await getScores([new Course("ABCD 1234")]))["ABCD 1234"];
-    expect(scores.getCourseScore()).toBe("N/A");
-    expect(scores.getProfScore()).toBe("N/A");
+test("multiple reviews' scores averaged", async () => {
+    const reviews = [
+        { ...review, courseavg: 4.6, profavg: 4.4 },
+        { ...review, courseavg: 3.4, profavg: 1.3 },
+        { ...review, courseavg: 2.5, profavg: 2.6 },
+    ];
+    fetchMock.once(JSON.stringify(reviews));
+    const scores = await getAllScores();
+    expect(scores).toEqual({
+        "CSCI 0190": {
+            course: (4.6 + 3.4 + 2.5) / 3,
+            prof: (4.4 + 1.3 + 2.6) / 3
+        }
+    });
+    expect(calculateScores(reviews)).toEqual(scores);
 });
 
-function expectValidScores(scores: Scores) {
-    const courseScore = scores.getCourseScore();
-    const profScore = scores.getProfScore();
-    expect(Number.parseFloat(courseScore)).toBeGreaterThanOrEqual(1);
-    expect(Number.parseFloat(courseScore)).toBeLessThanOrEqual(5);
-    expect(Number.parseFloat(profScore)).toBeGreaterThanOrEqual(1);
-    expect(Number.parseFloat(profScore)).toBeLessThanOrEqual(5);
-}
-
-test("valid scores retrieved for single course", async () => {
-    const scores = await getScores([new Course("CSCI 1450")]);
-    expectValidScores(scores["CSCI 1450"]);
+test("scores calculated for each course in reviews", async () => {
+    const reviews = [
+        { ...review, department_code: "ENGL", course_num: "0900" },
+        { ...review, department_code: "ENGN", course_num: "0030" },
+        { ...review, department_code: "CSCI", course_num: "1670" },
+    ];
+    fetchMock.once(JSON.stringify(reviews));
+    const scores = await getAllScores();
+    const expectedScores = { course: review.courseavg, prof: review.profavg };
+    expect(scores).toEqual({
+        "ENGL 0900": expectedScores,
+        "ENGN 0030": expectedScores,
+        "CSCI 1670": expectedScores,
+    });
+    expect(calculateScores(reviews)).toEqual(scores);
 });
 
-test("valid scores retrieved for multiple courses", async () => {
-    const courseNames = ["CSCI 1670", "CSCI 1690", "CLPS 1700"];
-    const scores = await getScores(courseNames.map(name => new Course(name)));
-    courseNames.map(name => expectValidScores(scores[name]));
+test("score calculation converts old reviews", async () => {
+    const review = {
+        department_code: "CSCI",
+        course_num: "1670",
+        edition: "2012.2013.1",
+        courseavg: 1,
+        profavg: 1
+    };
+    fetchMock.once(JSON.stringify([review]));
+    const scores = await getAllScores();
+    expect(scores).toEqual({
+        "CSCI 1670": {
+            course: 5,
+            prof: 5
+        }
+    });
 });
 
 test("score conversion for old reviews", () => {

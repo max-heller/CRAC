@@ -15,9 +15,10 @@
   "devDependencies": {
     "@types/chrome": "^0.0.80",
     "@types/jest": "^24.0.15",
+    "@types/node": "^12.0.10",
     "coveralls": "^3.0.4",
-    "isomorphic-fetch": "^2.2.1",
     "jest": "^24.8.0",
+    "jest-fetch-mock": "^2.1.2",
     "ts-jest": "^24.0.2",
     "ts-loader": "^5.4.5",
     "typescript": "^3.5.2",

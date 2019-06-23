@@ -1,13 +1,15 @@
-export class Course {
-    department: string;
-    code: string;
+export class Scores {
+    constructor(public prof?: number, public course?: number) { }
 
-    constructor(public name: string) {
-        [this.department, this.code] = name.split(' ');
+    public static fromAccumulator(acc: ScoreAccumulator): Scores {
+        const scores = new Scores();
+        if (acc.profCount > 0) scores.prof = acc.profSum / acc.profCount;
+        if (acc.courseCount > 0) scores.course = acc.courseSum / acc.courseCount;
+        return scores;
     }
 }
 
-export class Scores {
+export class ScoreAccumulator {
     profSum: number;
     profCount: number;
     courseSum: number;
@@ -15,15 +17,5 @@ export class Scores {
 
     constructor() {
         this.profSum = this.profCount = this.courseSum = this.courseCount = 0;
-    }
-
-    public getProfScore(): string {
-        return (this.profCount) ?
-            (this.profSum / this.profCount).toPrecision(3) : "N/A";
-    }
-
-    public getCourseScore(): string {
-        return (this.courseCount) ?
-            (this.courseSum / this.courseCount).toPrecision(3) : "N/A";
     }
 }
