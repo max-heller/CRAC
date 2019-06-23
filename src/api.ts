@@ -1,4 +1,4 @@
-import { Scores, Course } from "./scores";
+import { Scores, ScoreAccumulator } from "./scores";
 
 const apiURL = "https://us-east1-brown-critical-review.cloudfunctions.net/getCourseReviews";
 
@@ -10,37 +10,42 @@ interface Review {
     courseavg: number;
 }
 
-class ReviewSelector {
-    department_code: string;
-    course_num: string;
+type CourseMap<T> = { [s: string]: T };
+
+export function getAllReviews(): Promise<Review[]> {
+    return fetch(apiURL).then(response => response.json());
 }
 
-export function api(selectors: ReviewSelector[]): Promise<Review[]> {
-    return fetch(apiURL + `?selectors=${JSON.stringify(selectors)}`)
-        .then(response => response.json());
+export function getAllScores(): Promise<CourseMap<Scores>> {
+    return getAllReviews().then(calculateScores);
 }
 
-export async function getScores(courses: Course[]): Promise<{ [s: string]: Scores }> {
-    console.log(`Finding scores for ${courses.length} courses`);
-    const selectors = courses.map(course => {
-        return {
-            department_code: course.department,
-            course_num: course.code
-        };
+export function calculateScores(reviews: Review[]): CourseMap<Scores> {
+    const accumulators = {};
+    reviews.map(convertIfNecessary).forEach(review => {
+        // Locate or initialize scores accumulator for the review's course
+        let deptAccs = accumulators[review.department_code];
+        if (!deptAccs) deptAccs = accumulators[review.department_code] = {};
+        let courseAcc = deptAccs[review.course_num];
+        if (!courseAcc) courseAcc = deptAccs[review.course_num] = new ScoreAccumulator();
+
+        // Update course's scores accumulator
+        if (review.profavg) {
+            courseAcc.profSum += review.profavg;
+            courseAcc.profCount++;
+        }
+        if (review.courseavg) {
+            courseAcc.courseSum += review.courseavg;
+            courseAcc.courseCount++;
+        }
     });
 
-    const reviews = await api(selectors);
-    console.log(`Found ${reviews.length} reviews`);
-
     const allScores = {};
-    courses.forEach(course => allScores[course.name] = new Scores());
-    reviews.map(convertIfNecessary).forEach(review => {
-        const name = review.department_code + ' ' + review.course_num;
-        const scores = allScores[name];
-        scores.profSum += review.profavg;
-        scores.profCount++;
-        scores.courseSum += review.courseavg;
-        scores.courseCount++;
+    Object.entries(accumulators).forEach(([dept, deptAccs]) => {
+        Object.entries(deptAccs).forEach(([num, acc]) => {
+            const name = dept + ' ' + num;
+            allScores[name] = Scores.fromAccumulator(acc);
+        });
     });
     return allScores;
 }
@@ -52,7 +57,8 @@ export function convertIfNecessary(review: Review): Review {
     }
 
     function convert(score: number): number {
-        return (-4 / 3) * score + (19 / 3);
+        // Make sure not to convert falsy score
+        return score ? (-4 / 3) * score + (19 / 3) : 0;
     }
 
     if (shouldConvert(review.edition)) {

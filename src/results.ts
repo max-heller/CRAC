@@ -1,19 +1,26 @@
-import { getScores } from './api';
-import { Course } from './scores';
+import { getAllScores } from './api';
+import { Scores } from './scores';
+
+const allScoresPromise = getAllScores();
+
+export function scoreToString(score?: number) {
+    return score ? score.toPrecision(3) : "N/A";
+}
 
 export default async function updateResults(results: Element[]) {
-  const courses = results.map(result => {
-    return new Course(result.firstElementChild.getAttribute('data-group').slice(5));
-  });
+    const courses = results.map(result =>
+        // Slice removes 'code:' prefix e.g. 'code:CSCI 0190' => 'CSCI 0190'
+        result.firstElementChild.getAttribute('data-group').slice(5)
+    );
 
-  const allScores = await getScores(courses);
-  courses.forEach((course, i) => {
-    const headline: Element = results[i].querySelector('.result__headline');
-    const scores = allScores[course.name];
-    headline.innerHTML +=
-      `<div style="margin: auto; padding: 2px">
-         <div>${scores.getProfScore()}</div>
-         <div>${scores.getCourseScore()}</div>
-       </div>`;
-  });
+    const allScores = await allScoresPromise;
+    courses.forEach((course, i) => {
+        const headline: Element = results[i].querySelector('.result__headline');
+        const scores = allScores[course] || new Scores();
+        headline.innerHTML +=
+            `<div style="margin: auto; padding: 2px">
+                 <div>${scoreToString(scores.prof)}</div>
+                 <div>${scoreToString(scores.course)}</div>
+             </div>`;
+    });
 }
