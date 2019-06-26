@@ -1,5 +1,5 @@
-import { Builder, By, ThenableWebDriver, Key, until } from 'selenium-webdriver';
-import * as chrome from 'selenium-webdriver/chrome'
+import { Builder, By, Key, ThenableWebDriver, until } from 'selenium-webdriver';
+import * as chrome from 'selenium-webdriver/chrome';
 
 describe('Selenium Test Suite', () => {
     let driver: ThenableWebDriver;
@@ -29,11 +29,17 @@ describe('Selenium Test Suite', () => {
 
     it("should inject scores for each course in results", async () => {
         await driver.get(cab);
+
+        // Enter search and submit
         const searchBox = await driver.findElement(By.id('crit-keyword'));
         searchBox.sendKeys("CSCI 0190", Key.ENTER);
+
+        // Wait for results to load
         const results = await driver.wait(
             until.elementsLocated(By.className('result__headline')), 1000);
         expect(results.length).toBeGreaterThan(0);
+
+        // Wait for scores to load
         await driver.wait(until.elementsLocated(By.className('scores')), 15000);
         for (const result of results) {
             const scoreDivs = await result.findElements(By.className('score'));
