@@ -20,6 +20,9 @@
       ],
       "js": [
         "js/inject.js"
+      ],
+      "css": [
+        "css/styles.css"
       ]
     }
   ]

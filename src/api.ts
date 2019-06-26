@@ -1,69 +1,34 @@
-import { Scores, ScoreAccumulator } from "./scores";
-
-const apiURL = "https://us-east1-brown-critical-review.cloudfunctions.net/getCourseReviews";
-
-interface Review {
-    department_code: string;
-    course_num: string;
-    edition: string;
-    profavg: number;
-    courseavg: number;
-}
+import { Scores } from './scores';
 
 type CourseMap<T> = { [s: string]: T };
 
-export function getAllReviews(): Promise<Review[]> {
-    return fetch(apiURL).then(response => response.json());
+export class ApiRequest {
+    constructor(public type: RequestType, public courses?: string[]) { }
+
+    public toString(): string {
+        let components = [["type", this.type]];
+        if (this.courses) components.push(
+            ["courses", JSON.stringify(this.courses)]);
+        return components.map((component => component.join('='))).join('&');
+    }
 }
 
-export function getAllScores(): Promise<CourseMap<Scores>> {
-    return getAllReviews().then(calculateScores);
+export enum RequestType {
+    Reviews = "reviews",
+    Scores = "scores",
 }
 
-export function calculateScores(reviews: Review[]): CourseMap<Scores> {
-    const accumulators = {};
-    reviews.map(convertIfNecessary).forEach(review => {
-        // Locate or initialize scores accumulator for the review's course
-        let deptAccs = accumulators[review.department_code];
-        if (!deptAccs) deptAccs = accumulators[review.department_code] = {};
-        let courseAcc = deptAccs[review.course_num];
-        if (!courseAcc) courseAcc = deptAccs[review.course_num] = new ScoreAccumulator();
-
-        // Update course's scores accumulator
-        if (review.profavg) {
-            courseAcc.profSum += review.profavg;
-            courseAcc.profCount++;
-        }
-        if (review.courseavg) {
-            courseAcc.courseSum += review.courseavg;
-            courseAcc.courseCount++;
-        }
-    });
-
-    const allScores = {};
-    Object.entries(accumulators).forEach(([dept, deptAccs]) => {
-        Object.entries(deptAccs).forEach(([num, acc]) => {
-            const name = dept + ' ' + num;
-            allScores[name] = Scores.fromAccumulator(acc);
-        });
-    });
-    return allScores;
+function api(request: ApiRequest) {
+    const base = "https://us-east1-brown-critical-review.cloudfunctions.net/api";
+    return fetch(`${base}?${request}`).then(response => response.json());
 }
 
-export function convertIfNecessary(review: Review): Review {
-    function shouldConvert(edition: string): boolean {
-        var arr = edition.split('.').map(Number.parseInt);
-        return (arr[0] < 2014 || (arr[0] === 2014 && arr[2] !== 2));
+export async function getAllScores(): Promise<CourseMap<Scores>> {
+    const cached = localStorage.getItem('scores');
+    if (cached) return JSON.parse(cached);
+    else {
+        const scores = await api(new ApiRequest(RequestType.Scores));
+        localStorage.setItem('scores', JSON.stringify(scores));
+        return scores;
     }
-
-    function convert(score: number): number {
-        // Make sure not to convert falsy score
-        return score ? (-4 / 3) * score + (19 / 3) : 0;
-    }
-
-    if (shouldConvert(review.edition)) {
-        review.profavg = convert(review.profavg);
-        review.courseavg = convert(review.courseavg);
-    }
-    return review;
 }

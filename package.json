@@ -9,16 +9,19 @@
   "scripts": {
     "watch": "webpack --config webpack/webpack.dev.js --watch",
     "build": "webpack --config webpack/webpack.prod.js",
-    "test": "jest",
+    "test": "jest --coverage",
     "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.80",
     "@types/jest": "^24.0.15",
     "@types/node": "^12.0.10",
+    "@types/selenium-webdriver": "^4.0.0",
     "coveralls": "^3.0.4",
     "jest": "^24.8.0",
     "jest-fetch-mock": "^2.1.2",
+    "jest-localstorage-mock": "^2.4.0",
+    "selenium-webdriver": "^4.0.0-alpha.3",
     "ts-jest": "^24.0.2",
     "ts-loader": "^5.4.5",
     "typescript": "^3.5.2",

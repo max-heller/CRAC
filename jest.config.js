@@ -121,7 +121,8 @@ module.exports = {
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
   setupFiles: [
-    "./setupJest.ts"
+    "./setupJest.ts",
+    "jest-localstorage-mock",
   ],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test

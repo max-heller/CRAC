@@ -2,9 +2,8 @@ language: node_js
 node_js:
 - 'node'
 - 'lts/*'
-branches:
-  only:
-  - master
+addons:
+  chrome: stable
 cache:
   directories:
   - node_modules
@@ -12,5 +11,13 @@ before_install:
 - npm update
 install:
 - npm install
+- sudo apt-get -y install xvfb
+- wget -N http://chromedriver.storage.googleapis.com/$(wget -qO- http://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip -P ~/
+- unzip ~/chromedriver_linux64.zip -d ~/
+- rm ~/chromedriver_linux64.zip
+- sudo mv -f ~/chromedriver /usr/local/share/
+- sudo chmod +x /usr/local/share/chromedriver
+- sudo ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver
 script:
-- npm run coveralls
+- npm run build
+- xvfb-run -a npm run coveralls
