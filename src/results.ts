@@ -4,7 +4,8 @@ const allScoresPromise = getAllScores();
 
 export default async function updateResults(results: Element[]) {
     function updateWithScore(element: Element, score: number) {
-        if (element) element.setAttribute('data-score', (score / 5).toString());
+        element.setAttribute('data-score', ((score - 2.5) / 2.5).toString());
+        element.classList.add('scored');
     }
 
     const allScores = await allScoresPromise;
@@ -15,10 +16,16 @@ export default async function updateResults(results: Element[]) {
         const scores = allScores[course];
         if (scores) {
             const courseElement = result.querySelector('.result__code');
-            updateWithScore(courseElement, scores.course);
+            if (courseElement) {
+                updateWithScore(courseElement, scores.course);
+                courseElement.classList.add('scored--course');
+            }
 
             const profElement = result.querySelector('.result__flex--9.text--right');
-            updateWithScore(profElement, scores.prof);
+            if (profElement) {
+                updateWithScore(profElement, scores.prof);
+                courseElement.classList.add('scored--prof');
+            }
         }
     });
 }
