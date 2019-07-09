@@ -1,26 +1,31 @@
 import { getAllScores } from './api';
-import { Scores } from './scores';
 
 const allScoresPromise = getAllScores();
 
-export function scoreToString(score?: number) {
-    return score ? score.toPrecision(3) : "N/A";
-}
-
 export default async function updateResults(results: Element[]) {
-    const courses = results.map(result =>
-        // Slice removes 'code:' prefix e.g. 'code:CSCI 0190' => 'CSCI 0190'
-        result.firstElementChild.getAttribute('data-group').slice(5)
-    );
+    function updateWithScore(element: Element, score: number) {
+        element.setAttribute('data-score', ((score - 2.5) / 2.5).toString());
+        element.classList.add('scored');
+    }
 
     const allScores = await allScoresPromise;
-    courses.forEach((course, i) => {
-        const headline: Element = results[i].querySelector('.result__headline');
-        const scores = allScores[course] || new Scores();
-        headline.innerHTML +=
-            `<div class="scores">
-                 <div class="score">${scoreToString(scores.prof)}</div>
-                 <div class="score">${scoreToString(scores.course)}</div>
-             </div>`;
+    results.map(result => result.firstElementChild).forEach(result => {
+        // Slice removes 'code:' prefix e.g. 'code:CSCI 0190' => 'CSCI 0190'
+        const course = result.getAttribute('data-group').slice(5);
+
+        const scores = allScores[course];
+        if (scores) {
+            const courseElement = result.querySelector('.result__code');
+            if (courseElement) {
+                updateWithScore(courseElement, scores.course);
+                courseElement.classList.add('scored--course');
+            }
+
+            const profElement = result.querySelector('.result__flex--9.text--right');
+            if (profElement) {
+                updateWithScore(profElement, scores.prof);
+                courseElement.classList.add('scored--prof');
+            }
+        }
     });
 }

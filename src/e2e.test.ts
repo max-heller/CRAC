@@ -15,8 +15,11 @@ describe('Selenium Test Suite', () => {
         driver.manage().window().maximize();
     });
 
+    beforeEach(() => localStorage.clear());
+
     afterAll(() => {
         driver.quit();
+        localStorage.clear()
     });
 
     it("should be able to load CAB", () => {
@@ -27,34 +30,37 @@ describe('Selenium Test Suite', () => {
         });
     });
 
-    it("should inject scores for each course in results", async () => {
+    it("should inject scores for courses known to have reviews", async () => {
         await driver.get(cab);
 
         // Enter search and submit
         const searchBox = await driver.findElement(By.id('crit-keyword'));
-        searchBox.sendKeys("CSCI 0190", Key.ENTER);
+        searchBox.sendKeys("CSCI", Key.ENTER);
 
         // Wait for results to load
         const results = await driver.wait(
             until.elementsLocated(By.className('result__headline')), 1000);
         expect(results.length).toBeGreaterThan(0);
 
-        // Wait for scores to load
-        await driver.wait(until.elementsLocated(By.className('scores')), 15000);
-        for (const result of results) {
-            const scoreDivs = await result.findElements(By.className('score'));
-            expect(scoreDivs.length).toBeGreaterThan(0);
-            for (const scoreDiv of scoreDivs) {
-                const scoreText = await scoreDiv.getText();
-                expect(scoreText).toBeDefined();
-                let score;
-                if (score = Number.parseFloat(scoreText)) {
-                    expect(score).toBeGreaterThanOrEqual(1);
-                    expect(score).toBeLessThanOrEqual(5);
-                } else {
-                    expect(scoreText).toEqual("N/A");
-                }
-            };
-        };
-    }, 20000);
+        await driver.wait(until.elementsLocated(By.className('scored')), 20000);
+        const scoredCourses = await driver.findElements(By.className('scored--course'));
+        const scoredProfs = await driver.findElements(By.className('scored--prof'));
+
+        const courseScores = [], profScores = [];
+        for (const scoredCourse of scoredCourses) {
+            expect(await scoredCourse.getCssValue('color')).not.toBe('#444');
+            courseScores.push(await scoredCourse.getAttribute('data-score'));
+        }
+        for (const scoredProf of scoredProfs) {
+            expect(await scoredProf.getCssValue('color')).not.toBe('#444');
+            profScores.push(await scoredProf.getAttribute('data-score'));
+        }
+
+        expect(courseScores.length).toBeGreaterThan(5);
+        expect(courseScores.every(score =>
+            score === NaN || (score >= 0 && score <= 1))).toBe(true);
+        expect(profScores.length).toBeGreaterThan(5);
+        expect(profScores.every(score =>
+            score === NaN || (score >= 0 && score <= 1))).toBe(true);
+    }, 30000);
 });
