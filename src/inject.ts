@@ -19,7 +19,7 @@ new MutationObserver(function (mutations) {
 const resultsObserver = new MutationObserver(function (mutations) {
     console.log("resultsObserver triggered");
     const target = mutations.pop().target as Element;
-    const results = target.getElementsByClassName("result result--group-start");
+    const results = target.getElementsByClassName("result");
     console.log(`Found ${results.length} results!`);
     updateResults(Array.from(results));
 });

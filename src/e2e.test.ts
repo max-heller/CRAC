@@ -63,4 +63,24 @@ describe('Selenium Test Suite', () => {
         expect(profScores.every(score =>
             score === NaN || (score >= 0 && score <= 1))).toBe(true);
     }, 30000);
+
+    it("should inject professor scores for each section of a course", async () => {
+        await driver.get(cab);
+
+        // Enter search and submit
+        const searchBox = await driver.findElement(By.id('crit-keyword'));
+        searchBox.sendKeys("MATH 0100", Key.ENTER);
+
+        // Wait for results to load
+        const results = await driver.wait(
+            until.elementsLocated(By.className('result')), 1000);
+        expect(results.length).toBeGreaterThan(1);
+
+        await driver.wait(until.elementsLocated(By.className('scored')), 20000);
+        const scoredCourses = await driver.findElements(By.className('scored--course'));
+        const scoredProfs = await driver.findElements(By.className('scored--prof'));
+
+        expect(scoredCourses).toHaveLength(1);
+        expect(scoredProfs).toHaveLength(results.length);
+    }, 30000);
 });

@@ -24,7 +24,7 @@ export default async function updateResults(results: Element[]) {
         const profElement = result.querySelector('.result__flex--9.text--right');
         if (profElement) {
             updateWithScore(profElement, scores.prof);
-            courseElement.classList.add('scored--prof');
+            profElement.classList.add('scored--prof');
         }
     });
 }
