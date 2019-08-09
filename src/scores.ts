@@ -1,3 +1,8 @@
+export enum ScoreType {
+    Course = "course",
+    Prof = "prof",
+}
+
 export interface Scores {
     course: { [s: string]: number };
     prof: { [s: string]: number };
