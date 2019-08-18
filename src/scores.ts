@@ -1,11 +1,26 @@
+import { CourseScore, ProfessorScore } from './api';
+
 export enum ScoreType {
     Course = "course",
     Prof = "prof",
 }
 
-export interface Scores {
+export class Scores {
     course: { [s: string]: number };
     prof: { [s: string]: number };
+
+    constructor(courseScores: CourseScore[], professorScores: ProfessorScore[]) {
+        const scores = { course: {}, prof: {} };
+        courseScores.forEach(courseScore => {
+            const name = `${courseScore.department_code} ${courseScore.course_num}`;
+            scores.course[name] = courseScore.score;
+        });
+        professorScores.forEach(profScore => {
+            const name = convertProfNames(profScore.professor);
+            scores.prof[name] = profScore.score;
+        });
+        return scores;
+    }
 }
 
 class Name {
@@ -26,15 +41,6 @@ class Name {
     public toString(): string {
         return `${this.first[0]}. ${this.last}`;
     }
-}
-
-export function convertScores(scores: Scores): Scores {
-    const convertedProfScores = {};
-    Object.entries(scores.prof).forEach(([key, score]) => {
-        const convertedName = convertProfNames(key);
-        convertedProfScores[convertedName] = score;
-    });
-    return { course: scores.course, prof: convertedProfScores };
 }
 
 export function convertProfNames(names: string): string {

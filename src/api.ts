@@ -1,32 +1,54 @@
-import { convertScores, Scores } from './scores';
+import { Scores } from './scores';
 
-export class ApiRequest {
-    constructor(public type: RequestType, public courses?: string[]) { }
+export interface ApiRequest {
+    toString(): string;
+}
 
-    public toString(): string {
-        let components = [["type", this.type]];
-        if (this.courses) components.push(
-            ["courses", JSON.stringify(this.courses)]);
-        return components.map((component => component.join('='))).join('&');
+export async function api(request: ApiRequest): Promise<any> {
+    const base = "https://localhost:8443";
+    const response = await fetch(`${base}/${request}`, {
+        method: 'GET',
+        credentials: 'include'
+    });
+    if (response.status == 200) return response.json();
+    else {
+        chrome.tabs.create({ url: "https://localhost:8443" });
     }
 }
 
-export enum RequestType {
-    Reviews = "reviews",
-    Scores = "scores",
+export class CourseScore {
+    department_code: string;
+    course_num: string;
+    score: number;
 }
 
-export function api(request: ApiRequest) {
-    const base = "https://us-east1-brown-critical-review.cloudfunctions.net/api";
-    return fetch(`${base}?${request}`).then(response => response.json());
+export class ProfessorScore {
+    professor: string;
+    score: number;
+}
+
+export enum ScoresRequestType {
+    Courses = "courses",
+    Professors = "professors",
+}
+
+export class ScoresRequest {
+    constructor(public type: ScoresRequestType) { }
+
+    public toString(): string {
+        return `scores/${this.type}`;
+    }
 }
 
 export async function getAllScores(): Promise<Scores> {
     const cached = localStorage.getItem('scores');
     if (cached) return JSON.parse(cached);
     else {
-        const request = new ApiRequest(RequestType.Scores);
-        const scores = await api(request).then(convertScores);
+        const courseScoresRequest = new ScoresRequest(ScoresRequestType.Courses);
+        const courseScores = await api(courseScoresRequest);
+        const profScoresRequest = new ScoresRequest(ScoresRequestType.Professors);
+        const profScores = await api(profScoresRequest);
+        const scores = new Scores(courseScores, profScores);
         localStorage.setItem('scores', JSON.stringify(scores));
         return scores;
     }
