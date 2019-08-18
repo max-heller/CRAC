@@ -18,17 +18,18 @@ test("request toString", () => {
         `type=reviews&courses=["CSCI 0190","CSCI 1670"]`);
 });
 
-const scores = {
-    "ENGN 0030": {
-        "prof": 4.1,
-        "course": 3.9
-    }
-};
-
 test("scores cached", async () => {
+    const scores = {
+        course: { "ENGN 0030": 4.1 },
+        prof: { "Smith, John": 3.9 }
+    };
+
     fetchMock.once(JSON.stringify(scores));
     const scores1 = await getAllScores();
-    expect(scores1).toEqual(scores);
+    expect(scores1).toEqual({
+        course: scores.course,
+        prof: { "J. Smith": 3.9 }
+    });
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(localStorage.getItem).toHaveBeenCalledTimes(1);
     expect(localStorage.setItem).toHaveBeenCalledTimes(1);
@@ -38,4 +39,17 @@ test("scores cached", async () => {
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(localStorage.getItem).toHaveBeenCalledTimes(2);
     expect(localStorage.setItem).toHaveBeenCalledTimes(1);
+});
+
+test("prof names converted", async () => {
+    const scores = {
+        course: {},
+        prof: { "van Dam, Andries": 5 }
+    };
+
+    fetchMock.once(JSON.stringify(scores));
+    expect(await getAllScores()).toEqual({
+        course: {},
+        prof: { "A. van Dam": 5 }
+    });
 });

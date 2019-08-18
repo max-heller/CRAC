@@ -1,6 +1,4 @@
-import { Scores } from './scores';
-
-type CourseMap<T> = { [s: string]: T };
+import { convertScores, Scores } from './scores';
 
 export class ApiRequest {
     constructor(public type: RequestType, public courses?: string[]) { }
@@ -18,16 +16,17 @@ export enum RequestType {
     Scores = "scores",
 }
 
-function api(request: ApiRequest) {
+export function api(request: ApiRequest) {
     const base = "https://us-east1-brown-critical-review.cloudfunctions.net/api";
     return fetch(`${base}?${request}`).then(response => response.json());
 }
 
-export async function getAllScores(): Promise<CourseMap<Scores>> {
+export async function getAllScores(): Promise<Scores> {
     const cached = localStorage.getItem('scores');
     if (cached) return JSON.parse(cached);
     else {
-        const scores = await api(new ApiRequest(RequestType.Scores));
+        const request = new ApiRequest(RequestType.Scores);
+        const scores = await api(request).then(convertScores);
         localStorage.setItem('scores', JSON.stringify(scores));
         return scores;
     }

@@ -1,26 +1,28 @@
 import { getAllScores } from './api';
-import { Scores } from './scores';
+import { ScoreType } from './scores';
 
 const allScoresPromise = getAllScores();
 
-export function scoreToString(score?: number) {
-    return score ? score.toPrecision(3) : "N/A";
-}
-
 export default async function updateResults(results: Element[]) {
-    const courses = results.map(result =>
-        // Slice removes 'code:' prefix e.g. 'code:CSCI 0190' => 'CSCI 0190'
-        result.firstElementChild.getAttribute('data-group').slice(5)
-    );
+    const scores = await allScoresPromise;
 
-    const allScores = await allScoresPromise;
-    courses.forEach((course, i) => {
-        const headline: Element = results[i].querySelector('.result__headline');
-        const scores = allScores[course] || new Scores();
-        headline.innerHTML +=
-            `<div class="scores">
-                 <div class="score">${scoreToString(scores.prof)}</div>
-                 <div class="score">${scoreToString(scores.course)}</div>
-             </div>`;
+    function updateWithScore(element: Element, type: ScoreType) {
+        const split = element.textContent.split(': ');
+        const key = split[split.length - 1];
+        const score = scores[type][key];
+        if (score) {
+            element.setAttribute('title', score.toFixed(2));
+            element.setAttribute('data-score', ((score - 2.5) / 2.5).toString());
+            element.classList.add('scored');
+            element.classList.add('scored--' + type);
+        }
+    }
+
+    results.map(result => result.firstElementChild).forEach(result => {
+        const courseElement = result.querySelector('.result__code');
+        if (courseElement) updateWithScore(courseElement, ScoreType.Course);
+
+        const profElement = result.querySelector('.result__flex--9.text--right');
+        if (profElement) updateWithScore(profElement, ScoreType.Prof);
     });
 }
