@@ -1,4 +1,4 @@
-import { convertProfNames, convertScores } from './scores';
+import { convertProfNames, Scores } from './scores';
 
 const pairs = [
     ["van Dam, Andries", "A. van Dam"],
@@ -16,16 +16,18 @@ test("prof name conversion", () => {
 });
 
 test("score converstion", () => {
-    const scores = {
-        course: { "CSCI 0190": 4.6 },
-        prof: {}
-    };
-    pairs.forEach(([before, after], i) => {
-        scores.prof[before] = i;
+    const courseScores = [
+        { department_code: "CSCI", course_num: "0190", score: 4.6 }
+    ];
+    const profScores = [];
+    pairs.forEach(([before, _], i) => {
+        profScores.push({ professor: before, score: i });
     });
-    const converted = convertScores(scores);
-    expect(converted.course).toEqual(scores.course);
-    pairs.forEach(([before, after], i) => {
+    const converted = new Scores(courseScores, profScores);
+    expect(converted.course).toEqual({
+        "CSCI 0190": 4.6
+    });
+    pairs.forEach(([_, after], i) => {
         expect(converted.prof[after]).toBe(i);
     });
 });
