@@ -15,7 +15,6 @@ describe('Selenium Test Suite', () => {
             .build();
         driver.manage().window().maximize();
 
-
         // Authenticate with BrownCR
         console.log("Loading BrownCR");
         await driver.get(`${BROWNCR}/search/CSCI`);
@@ -33,9 +32,9 @@ describe('Selenium Test Suite', () => {
         await driver.findElement(By.name('passcode')).sendKeys(process.env.BROWN_BYPASS_CODE, Key.ENTER);
 
         console.log("Waiting to find results (indicative of successful login)");
-        await driver.wait(until.elementLocated(By.className('results_header')), 10000);
+        await driver.wait(until.elementLocated(By.className('results_header')), 30000);
         console.log("Logged in!");
-    }, 20000);
+    }, 60000);
 
     beforeEach(() => sessionStorage.clear());
 
