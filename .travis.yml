@@ -7,6 +7,9 @@ node_js:
 env:
   - EXTENSION_ID=abgkdoeomcmepmmpfjipbgnbphljajii
 addons:
+  artifacts:
+    paths:
+      - ./tmp
   chrome: stable
 cache:
   directories:
