@@ -8,8 +8,9 @@ env:
   - EXTENSION_ID=abgkdoeomcmepmmpfjipbgnbphljajii
 addons:
   artifacts:
+    s3_region: "us-east-2"
     paths:
-      - ./tmp
+      - "./tmp"
   chrome: stable
 cache:
   directories:
