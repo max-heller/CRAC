@@ -1,19 +1,41 @@
 import { Scores } from './scores';
 
+/** The URL for Brown University's Critical Review */
+export const BROWNCR = "https://thecriticalreview.org";
+
+/** Interface representing requests for the Critical Review API */
 export interface ApiRequest {
     toString(): string;
 }
 
+/**
+ * Query the Critical Review API
+ * @param request the desired request
+ */
 export async function api(request: ApiRequest): Promise<any> {
-    const base = "https://localhost:8443";
-    const response = await fetch(`${base}/${request}`, {
+    return fetch(`${BROWNCR}/${request}`, {
         method: 'GET',
         credentials: 'include'
+    }).then(response => {
+        if (response.status === 200) return response.json();
+        else throw new Error("Non-200 status from thecriticalreview.org API");
     });
-    if (response.status == 200) return response.json();
-    else {
-        chrome.tabs.create({ url: "https://localhost:8443" });
-    }
+}
+
+/**
+ * Attempts to retry some action after prompting the user to log in
+ * @param f A thunk to be executed after logging in
+ *
+ * Ignored for the purpose of coverage because of reliance on chrome APIs,
+ * which aren't present for unit tests.
+ */
+/* istanbul ignore next */
+export async function loginAndRetry<T>(f: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage('require-login', response => {
+            if (response === 'retry') f().then(resolve, reject);
+        });
+    });
 }
 
 export class CourseScore {
@@ -40,16 +62,18 @@ export class ScoresRequest {
     }
 }
 
+/** Retrieve all course and professor scores from the Critical Review's API */
 export async function getAllScores(): Promise<Scores> {
-    const cached = localStorage.getItem('scores');
+    const cached = sessionStorage.getItem('scores');
     if (cached) return JSON.parse(cached);
     else {
         const courseScoresRequest = new ScoresRequest(ScoresRequestType.Courses);
-        const courseScores = await api(courseScoresRequest);
         const profScoresRequest = new ScoresRequest(ScoresRequestType.Professors);
-        const profScores = await api(profScoresRequest);
-        const scores = new Scores(courseScores, profScores);
-        localStorage.setItem('scores', JSON.stringify(scores));
-        return scores;
+        return Promise.all([api(courseScoresRequest), api(profScoresRequest)])
+            .then(([courseScores, profScores]) => {
+                const scores = new Scores(courseScores, profScores);
+                sessionStorage.setItem('scores', JSON.stringify(scores));
+                return scores;
+            }).catch(() => loginAndRetry(getAllScores));
     }
 }

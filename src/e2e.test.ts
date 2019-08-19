@@ -1,5 +1,6 @@
 import { Builder, By, Key, ThenableWebDriver, until, WebElement } from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
+import { BROWNCR } from './api';
 
 describe('Selenium Test Suite', () => {
     let driver: ThenableWebDriver;
@@ -8,26 +9,31 @@ describe('Selenium Test Suite', () => {
 
     const cab = "https://cab.brown.edu/";
 
-    beforeAll(() => {
+    beforeAll(async () => {
         driver = new Builder()
             .withCapabilities(options)
             .build();
         driver.manage().window().maximize();
-    });
 
-    beforeEach(() => localStorage.clear());
+
+        // Authenticate with BrownCR
+        await driver.get(`${BROWNCR}/search/CSCI`);
+        await driver.findElement(By.id('username')).sendKeys(process.env.BROWN_USERNAME);
+        await driver.findElement(By.id('password')).sendKeys(process.env.BROWN_PASSWORD, Key.ENTER);
+        const authFrame = await driver.wait(until.elementLocated(By.id('duo_iframe')), 10000);
+        await driver.switchTo().frame(authFrame);
+        await driver.findElement(By.id('passcode')).click();
+        await driver.findElement(By.name('passcode')).sendKeys(process.env.BROWN_BYPASS_CODE);
+        await driver.findElement(By.id('remember_me_label_text')).click();
+        await driver.findElement(By.id('passcode')).click();
+        await driver.wait(until.elementLocated(By.className('results_header')), 10000);
+    }, 20000);
+
+    beforeEach(() => sessionStorage.clear());
 
     afterAll(() => {
         driver.quit();
-        localStorage.clear()
-    });
-
-    it("should be able to load CAB", () => {
-        driver.get(cab).then(() => {
-            driver.getCurrentUrl().then(currentUrl => {
-                expect(currentUrl).toEqual(cab);
-            });
-        });
+        sessionStorage.clear()
     });
 
     /**

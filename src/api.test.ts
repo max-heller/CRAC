@@ -1,8 +1,8 @@
 import { FetchMock } from 'jest-fetch-mock';
-import { getAllScores, ScoresRequest, ScoresRequestType } from './api';
+import { getAllScores, ScoresRequest, ScoresRequestType, api } from './api';
 
 beforeEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
 });
 
 test("request toString", () => {
@@ -10,6 +10,15 @@ test("request toString", () => {
     expect(request.toString()).toEqual("scores/courses");
     request = new ScoresRequest(ScoresRequestType.Professors);
     expect(request.toString()).toEqual("scores/professors");
+});
+
+test("bad responses from api", async () => {
+    fetchMock.once("Unauthenticated", { status: 403 });
+    const req = new ScoresRequest(ScoresRequestType.Courses);
+    expect.assertions(1);
+    api(req).catch(err => {
+        expect(err).toBeDefined();
+    });
 });
 
 test("scores cached", async () => {
@@ -24,14 +33,14 @@ test("scores cached", async () => {
         prof: { "J. Smith": 3.9 }
     });
     expect(fetch).toHaveBeenCalledTimes(2);
-    expect(localStorage.getItem).toHaveBeenCalledTimes(1);
-    expect(localStorage.setItem).toHaveBeenCalledTimes(1);
+    expect(sessionStorage.getItem).toHaveBeenCalledTimes(1);
+    expect(sessionStorage.setItem).toHaveBeenCalledTimes(1);
 
     const scores2 = await getAllScores();
     expect(scores2).toEqual(scores1);
     expect(fetch).toHaveBeenCalledTimes(2);
-    expect(localStorage.getItem).toHaveBeenCalledTimes(2);
-    expect(localStorage.setItem).toHaveBeenCalledTimes(1);
+    expect(sessionStorage.getItem).toHaveBeenCalledTimes(2);
+    expect(sessionStorage.setItem).toHaveBeenCalledTimes(1);
 });
 
 test("prof names converted", async () => {

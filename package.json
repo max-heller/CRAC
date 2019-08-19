@@ -10,13 +10,15 @@
     "watch": "webpack --config webpack/webpack.dev.js --watch",
     "build": "webpack --config webpack/webpack.prod.js",
     "test": "jest --coverage",
-    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls"
+    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls",
+    "release": "webstore upload --source=dist --auto-publish"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.80",
     "@types/jest": "^24.0.17",
     "@types/node": "^12.6.9",
     "@types/selenium-webdriver": "^4.0.1",
+    "chrome-webstore-upload-cli": "^1.2.0",
     "coveralls": "^3.0.5",
     "jest": "^24.8.0",
     "jest-fetch-mock": "^2.1.2",

@@ -1,7 +1,8 @@
 language: node_js
 node_js:
 - 'node'
-- 'lts/*'
+env:
+  - EXTENSION_ID=abgkdoeomcmepmmpfjipbgnbphljajii
 addons:
   chrome: stable
 cache:
@@ -21,3 +22,9 @@ install:
 script:
 - npm run build
 - xvfb-run -a npm run coveralls
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: npm run release
+  on:
+    branch: master
