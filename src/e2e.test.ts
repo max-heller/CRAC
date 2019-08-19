@@ -17,16 +17,24 @@ describe('Selenium Test Suite', () => {
 
 
         // Authenticate with BrownCR
+        console.log("Loading BrownCR");
         await driver.get(`${BROWNCR}/search/CSCI`);
-        await driver.findElement(By.id('username')).sendKeys(process.env.BROWN_USERNAME);
+
+        console.log("Entering credentials");
+        await driver.wait(until.elementLocated(By.id('username')), 10000).sendKeys(process.env.BROWN_USERNAME);
         await driver.findElement(By.id('password')).sendKeys(process.env.BROWN_PASSWORD, Key.ENTER);
+
+        console.log("Looking for 2FA iframe");
         const authFrame = await driver.wait(until.elementLocated(By.id('duo_iframe')), 10000);
         await driver.switchTo().frame(authFrame);
+
+        console.log("Entering bypass code");
         await driver.findElement(By.id('passcode')).click();
-        await driver.findElement(By.name('passcode')).sendKeys(process.env.BROWN_BYPASS_CODE);
-        await driver.findElement(By.id('remember_me_label_text')).click();
-        await driver.findElement(By.id('passcode')).click();
+        await driver.findElement(By.name('passcode')).sendKeys(process.env.BROWN_BYPASS_CODE, Key.ENTER);
+
+        console.log("Waiting to find results (indicative of successful login)");
         await driver.wait(until.elementLocated(By.className('results_header')), 10000);
+        console.log("Logged in!");
     }, 20000);
 
     beforeEach(() => sessionStorage.clear());
