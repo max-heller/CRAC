@@ -1,3 +1,6 @@
+dist: xenial
+services:
+  - xvfb
 language: node_js
 node_js:
 - 'node'
@@ -12,7 +15,6 @@ before_install:
 - npm update
 install:
 - npm install
-- sudo apt-get -y install xvfb
 - wget -N http://chromedriver.storage.googleapis.com/$(wget -qO- http://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip -P ~/
 - unzip ~/chromedriver_linux64.zip -d ~/
 - rm ~/chromedriver_linux64.zip
@@ -21,7 +23,7 @@ install:
 - sudo ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver
 script:
 - npm run build
-- xvfb-run -a npm run coveralls
+- npm run coveralls
 deploy:
   skip_cleanup: true
   provider: script
