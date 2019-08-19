@@ -15,6 +15,12 @@ Say goodbye to opening tab upon tab of reviews when searching for courses, and s
 ![After screenshot](docs/after.png)
 
 
-## Installation
+## Getting Started
 
-Coming soon to the Chrome web store!
+Get the extension [here](https://chrome.google.com/webstore/detail/critical-review-cab/abgkdoeomcmepmmpfjipbgnbphljajii)!
+
+Once installed, simply visit [Courses@Brown](https://cab.brown.edu) and the extension will go into effect! If you aren't authenticated with The Critical Review, the extension icon will have a bright red background, as shown in the following screenshot:
+
+![Warning Icon](docs/warn-icon.png)
+
+To authenticate, click on the icon, log in when prompted, and close the new tab when it gets to a list of search results.
