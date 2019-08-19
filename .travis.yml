@@ -7,10 +7,7 @@ node_js:
 env:
   - EXTENSION_ID=abgkdoeomcmepmmpfjipbgnbphljajii
 addons:
-  artifacts:
-    s3_region: "us-east-2"
-    paths:
-      - "./tmp"
+  artifacts: true
   chrome: stable
 cache:
   directories:
