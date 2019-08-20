@@ -29,28 +29,28 @@ describe('Selenium Test Suite', () => {
         // Authenticate with BrownCR
         console.log("Loading BrownCR");
         await driver.get(`${BROWNCR}/search/CSCI`);
+        await driver.sleep(1000);
 
         console.log("Entering credentials");
         await driver.wait(until.elementLocated(By.id('username')), 10000).sendKeys(process.env.BROWN_USERNAME);
         await driver.findElement(By.id('password')).sendKeys(process.env.BROWN_PASSWORD, Key.ENTER);
+        await driver.sleep(1000);
         await screenshot("credentials_entered.png");
 
         console.log("Looking for 2FA iframe");
         const authFrame = await driver.wait(until.elementLocated(By.id('duo_iframe')), 10000);
         await driver.switchTo().frame(authFrame);
-
-        console.log("Waiting for Brown logo");
-        const logo = await driver.wait(until.elementLocated(By.tagName('img')), 10000);
         await driver.sleep(1000);
-        expect(logo.getAttribute('alt')).resolves.toBe("Brown University Authentication");
 
         console.log("Entering bypass code");
         await driver.findElement(By.id('passcode')).click();
         await driver.findElement(By.name('passcode')).sendKeys(process.env.BROWN_BYPASS_CODE, Key.ENTER);
+        await driver.sleep(1000);
         await screenshot("bypass_code_entered.png");
 
         console.log("Waiting to find results (indicative of successful login)");
         await driver.wait(until.elementLocated(By.className('results_header')), 30000);
+        await driver.sleep(1000);
         await screenshot("login_finished.png");
         console.log("Logged in!");
     }, 60000);
