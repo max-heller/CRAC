@@ -1,5 +1,11 @@
 import { Builder, By, Key, ThenableWebDriver, until, WebElement } from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
+import { BROWNCR } from './api';
+import { promisify } from 'util';
+import { writeFile, mkdir } from 'fs';
+
+const SCREENSHOT_DIR = "tmp";
+const saveFile = promisify(writeFile);
 
 describe('Selenium Test Suite', () => {
     let driver: ThenableWebDriver;
@@ -8,26 +14,47 @@ describe('Selenium Test Suite', () => {
 
     const cab = "https://cab.brown.edu/";
 
-    beforeAll(() => {
+    beforeAll(async () => {
         driver = new Builder()
             .withCapabilities(options)
             .build();
         driver.manage().window().maximize();
-    });
 
-    beforeEach(() => localStorage.clear());
+        async function screenshot(name: String): Promise<void> {
+            const image = await driver.takeScreenshot();
+            return saveFile(`${SCREENSHOT_DIR}/${name}`, image, 'base64');
+        }
+        promisify(mkdir)(SCREENSHOT_DIR);
+
+        // Authenticate with BrownCR
+        console.log("Loading BrownCR");
+        await driver.get(`${BROWNCR}/search/CSCI`);
+
+        console.log("Entering credentials");
+        await driver.wait(until.elementLocated(By.id('username')), 10000).sendKeys(process.env.BROWN_USERNAME);
+        await driver.findElement(By.id('password')).sendKeys(process.env.BROWN_PASSWORD, Key.ENTER);
+        await screenshot("credentials_entered.png");
+
+        console.log("Looking for 2FA iframe");
+        const authFrame = await driver.wait(until.elementLocated(By.id('duo_iframe')), 10000);
+        await driver.switchTo().frame(authFrame);
+
+        console.log("Entering bypass code");
+        await driver.findElement(By.id('passcode')).click();
+        await driver.findElement(By.name('passcode')).sendKeys(process.env.BROWN_BYPASS_CODE, Key.ENTER);
+        await screenshot("bypass_code_entered.png");
+
+        console.log("Waiting to find results (indicative of successful login)");
+        await driver.wait(until.elementLocated(By.className('results_header')), 30000);
+        await screenshot("login_finished.png");
+        console.log("Logged in!");
+    }, 60000);
+
+    beforeEach(() => sessionStorage.clear());
 
     afterAll(() => {
         driver.quit();
-        localStorage.clear()
-    });
-
-    it("should be able to load CAB", () => {
-        driver.get(cab).then(() => {
-            driver.getCurrentUrl().then(currentUrl => {
-                expect(currentUrl).toEqual(cab);
-            });
-        });
+        sessionStorage.clear()
     });
 
     /**
