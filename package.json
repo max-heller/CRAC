@@ -15,20 +15,20 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.0.80",
-    "@types/jest": "^24.0.17",
-    "@types/node": "^12.6.9",
-    "@types/selenium-webdriver": "^4.0.1",
+    "@types/jest": "^24.0.18",
+    "@types/node": "^12.7.2",
+    "@types/selenium-webdriver": "^4.0.2",
     "chrome-webstore-upload-cli": "^1.2.0",
-    "coveralls": "^3.0.5",
-    "jest": "^24.8.0",
+    "coveralls": "^3.0.6",
+    "jest": "^24.9.0",
     "jest-fetch-mock": "^2.1.2",
     "jest-localstorage-mock": "^2.4.0",
     "selenium-webdriver": "^4.0.0-alpha.4",
     "ts-jest": "^24.0.2",
     "ts-loader": "^5.4.5",
     "typescript": "^3.5.3",
-    "webpack": "^4.39.1",
-    "webpack-cli": "^3.3.6",
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.7",
     "webpack-merge": "^4.2.1"
   }
 }
