@@ -117,6 +117,7 @@ describe('Selenium Test Suite', () => {
         await driver.get(cab);
 
         // Search for course with many sections
+        await driver.findElement(By.css("#crit-srcdb>option[value='201820']")).click();
         const results = await searchResults("MATH 0100");
         expect(results.length).toBeGreaterThan(1);
         expect(await driver.findElements(By.className('result--group-start'))).toHaveLength(1);
