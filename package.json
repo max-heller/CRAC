@@ -20,7 +20,7 @@
     "@types/selenium-webdriver": "^4.0.2",
     "chrome-webstore-upload-cli": "^1.2.0",
     "coveralls": "^3.0.6",
-    "jest": "^24.9.0",
+    "jest": "^25.2.3",
     "jest-fetch-mock": "^2.1.2",
     "jest-localstorage-mock": "^2.4.0",
     "selenium-webdriver": "^4.0.0-alpha.4",
