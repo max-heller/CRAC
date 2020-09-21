@@ -74,6 +74,6 @@ export async function getAllScores(): Promise<Scores> {
                 const scores = new Scores(courseScores, profScores);
                 sessionStorage.setItem('scores', JSON.stringify(scores));
                 return scores;
-            }).catch(() => loginAndRetry(getAllScores));
+            });
     }
 }

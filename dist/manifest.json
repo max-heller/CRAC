@@ -7,7 +7,7 @@
     "128": "icon128.png",
     "48": "icon48.png"
   },
-  "permissions": [],
+  "permissions": ["https://cab.brown.edu/*", "https://thecriticalreview.org/*"],
   "background": {
     "scripts": [
       "js/background.js"
@@ -24,6 +24,14 @@
       ],
       "css": [
         "css/styles.css"
+      ]
+    },
+    {
+      "matches": [
+        "https://thecriticalreview.org/*"
+      ],
+      "js": [
+        "js/safari-cr-fetcher.js"
       ]
     }
   ],

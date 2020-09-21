@@ -4,6 +4,7 @@ const srcDir = '../src/';
 module.exports = {
     entry: {
         inject: path.join(__dirname, srcDir + "inject.ts"),
+        'safari-cr-fetcher': path.join(__dirname, srcDir + "safari-cr-fetcher.ts"),
         background: path.join(__dirname, srcDir + "background.ts")
     },
     output: {

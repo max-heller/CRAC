@@ -1,7 +1,9 @@
 import { getAllScores } from './api';
 import { ScoreType } from './scores';
 
-const allScoresPromise = getAllScores();
+const allScoresPromise = getAllScores().catch(() => new Promise(resolve => {
+  chrome.runtime.sendMessage('request-scores', resolve)
+}));
 
 export default async function updateResults(results: Element[]) {
     const scores = await allScoresPromise;
